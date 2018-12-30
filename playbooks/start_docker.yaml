@@ -1,0 +1,48 @@
+---
+
+- hosts: master
+  remote_user: kumar
+  vars:
+    hosts_name:
+      - zookeeper-01
+      - kafka-01
+      - kafka-02
+      - kafka-03
+
+  tasks:
+    - name: Start "{{item}}" doker container
+      become_user: root
+      become: yes
+      become_method: sudo
+      command: docker start "{{item}}"
+      loop: "{{hosts_name}}"
+
+    - pause:
+        prompt: "Wating for container to start"
+        seconds: 5
+
+    - name: Start ssd service on container "{{item}}"
+      become_user: root
+      become_method: sudo
+      become: yes
+      command: docker exec -it "{{item}}" service ssh start
+      loop: "{{hosts_name}}"
+    - pause:
+        prompt: "waiting for sshd to start"
+        seconds: 5
+
+- hosts: zookeeper
+  remote_user: root
+  tasks:
+    - name: start Zookeeper
+      shell:
+        chdir: /opt/kafka_2.11-2.0.0/
+        cmd: bin/zookeeper-server-start.sh -daemon config/zookeeper.properties
+
+- hosts: kafka
+  remote_user: root
+  tasks:
+    - name: Start kafka
+      shell:
+        chdir: /opt/kafka_2.11-2.0.0/
+        cmd: bin/kafka-server-start.sh -daemon config/server.properties

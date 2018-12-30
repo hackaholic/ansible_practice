@@ -1,0 +1,8 @@
+[master]
+master ansible_host=master
+[zookeeper]
+zookeeper-01 ansible_host=zookeeper-01
+[kafka]
+kafka-01 ansible_host=kafka-01
+kafka-02 ansible_host=kafka-02
+kafka-03 ansible_host=kafka-03
