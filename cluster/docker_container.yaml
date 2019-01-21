@@ -1,0 +1,51 @@
+---
+
+- hosts: master
+  remote_user: juniour
+  become_user: root
+  become: yes
+  become_method: sudo
+
+  tasks:
+    - name: List docker network
+      become_user: root
+      become: yes
+      become_method: sudo
+      shell:
+        cmd: docker network ls
+      register: docker_network
+
+    - debug:
+        msg: "{{host_names}}"
+    - debug:
+        msg: "{{docker_network.stdout_lines}}"
+    
+    - name: Creating docker network cluster
+      become_user: root
+      become: yes
+      become_method: sudo
+      shell:
+        cmd: docker network create -d bridge --subnet "{{subnet}}" "{{network}}"
+      when: docker_network.stdout is not search("{{network}}")
+
+    - name: Listing docker container
+      shell:
+        cmd: docker ps -a
+      register: docker_container
+
+    - debug:
+        msg: "{{docker_container.stdout_lines}}"
+
+    - name: Creating container for host "{{item.key}}"
+      become_user: root
+      become: yes
+      become_method: sudo
+      shell:
+        cmd: docker run -itd --name "{{item.key}}" --hostname "{{item.key}}" --network "{{network}}" --ip "{{item.value}}" "{{image}}"
+      with_dict: "{{host_names}}"
+      when: docker_container.stdout is not search("{{item.key}}")
+      
+    - pause:
+        prompt: "Waiting for docker container to start"
+        seconds: 5
+

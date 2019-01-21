@@ -1,0 +1,59 @@
+---
+
+- hosts: zookeeper
+  remote_user: root
+  become: yes
+  tasks:
+    - name: Check if zookeeper is already deployed
+      shell: 
+        cmd: ls /opt
+      register: zookeeper_deploy_status
+
+    - name: Deploying Zookeeper
+      copy:
+        src: /home/juniour/Downloads/kafka_2.11-2.1.0
+        dest: /opt
+        mode: u=rwx
+      when: zookeeper_deploy_status.stdout is not search("{{kafka_version}}")
+      notify:
+        - Deploy zookeeper config
+        - Start zookeeper
+
+    - name: list zookeeper process
+      shell:
+        cmd: ps aux | grep zookeeper.properties
+      register: zookeeper_process
+    - debug:
+        var: zookeeper_process
+
+    - name: Start zookeeper if not running
+      command: ls
+      when: zookeeper_process.stdout is not search("QuorumPeerMain")
+      notify:
+        - Start zookeeper
+
+    - name: Detect Config change in zookeeper
+      template:
+        src: /home/juniour/git/ansible_practice/cluster/template/zookeeper.j2
+        dest: /opt/{{kafka_version}}/config/zookeeper.properties
+      register: zookeeper_config_change
+
+    - name: Restart zookeeper server if config changes
+      shell:
+        chdir: /opt/{{kafka_version}}
+        cmd: bin/zookeeper-server-stop.sh
+      when: zookeeper_config_change.changed
+      notify:
+        - Start zookeeper
+      
+  
+  handlers:
+    - name: Deploy zookeeper config
+      template:
+        src: /home/juniour/git/ansible_practice/cluster/template/zookeeper.j2
+        dest: /opt/{{kafka_version}}/config/zookeeper.properties
+    
+    - name: Start zookeeper
+      shell:
+        chdir: /opt/{{kafka_version}}
+        cmd: bin/zookeeper-server-start.sh -daemon config/zookeeper.properties

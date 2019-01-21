@@ -1,8 +1,25 @@
+[all:vars]
+image=ubuntuc:2.0
+network=cluster
+subnet=173.17.0.1/16
+host_names={'zk-01':'173.17.0.2', 'kf-01':'173.17.0.3', 'kf-02':'173.17.0.4', 'kf-03':'173.17.0.5', 'es-01':'173.17.0.21', 'es-02':'173.17.0.22', 'es-03':'173.17.0.23'}
+kafka_version=kafka_2.11-2.1.0
+
 [master]
 master ansible_host=master
+
 [zookeeper]
-zookeeper-01 ansible_host=zookeeper-01
+zk-01 ansible_host=zk-01
+[zookeeper:vars]
+zookeeper_data_dir=/tmp/zookeeper
+zookeeper_port=2181
+
 [kafka]
 kafka-01 ansible_host=kafka-01
 kafka-02 ansible_host=kafka-02
 kafka-03 ansible_host=kafka-03
+
+[elasticsearch]
+es-01 ansible_host=es-01
+es-02 ansible_host=es-02
+es-03 ansible_host=es-03
