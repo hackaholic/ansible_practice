@@ -1,0 +1,6 @@
+---
+
+zk-01:
+  zookeeper_data_dir: /tmp/zookeeper
+  zookeeper_port: 2181
+
