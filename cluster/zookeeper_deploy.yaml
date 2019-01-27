@@ -26,8 +26,6 @@
       shell:
         cmd: ps aux | grep zookeeper.properties
       register: zookeeper_process
-    - debug:
-        var: zookeeper_process
 
     - name: Start zookeeper if not running
       command: ls
