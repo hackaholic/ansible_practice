@@ -8,16 +8,16 @@
 
   tasks:
     - name: Check if zookeeper is already deployed
-      shell: 
-        cmd: ls /opt
+      stat: 
+        path:  "{{ zookeeper_deploy_dir }}/{{ kafka_version }}"
       register: zookeeper_deploy_status
 
     - name: Deploying Zookeeper
       copy:
-        src: /home/juniour/Downloads/kafka_2.11-2.1.0
-        dest: /opt
+        src: "{{ zookeeper_download_dir }}"
+        dest: "{{ zookeeper_deploy_dir }}"
         mode: u=rwx
-      when: zookeeper_deploy_status.stdout is not search("{{kafka_version}}")
+      when: not zookeeper_deploy_status.stat.exists
       notify:
         - Deploy zookeeper config
         - Start zookeeper
@@ -36,12 +36,12 @@
     - name: Detect Config change in zookeeper
       template:
         src: template/zookeeper.j2
-        dest: /opt/{{kafka_version}}/config/zookeeper.properties
+        dest: "{{ zookeeper_deploy_dir}}/{{ kafka_version }}/config/zookeeper.properties"
       register: zookeeper_config_change
 
     - name: Restart zookeeper server if config changes
       shell:
-        chdir: /opt/{{kafka_version}}
+        chdir: "{{ zookeeper_deploy_dir }}/{{ kafka_version }}"
         cmd: bin/zookeeper-server-stop.sh
       when: zookeeper_config_change.changed
       notify:
@@ -52,9 +52,9 @@
     - name: Deploy zookeeper config
       template:
         src: template/zookeeper.j2
-        dest: /opt/{{kafka_version}}/config/zookeeper.properties
+        dest: "{{ zookeeper_deploy_dir }}/{{ kafka_version }}/config/zookeeper.properties"
     
     - name: Start zookeeper
       shell:
-        chdir: /opt/{{kafka_version}}
+        chdir: "{{ zookeeper_deploy_dir }}/{{ kafka_version }}"
         cmd: bin/zookeeper-server-start.sh -daemon config/zookeeper.properties

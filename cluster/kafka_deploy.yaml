@@ -1,0 +1,62 @@
+---
+
+- hosts: kafka
+  remote_user: root
+  become: yes
+  become_method: sudo
+  vars_files: 
+    - config/kafka_config.yaml
+
+  tasks:
+    - name: Check if kafka is already deployed
+      stat:
+        path: "{{ kafka_deploy_dir }}/{{ kafka_version }}"
+      register: kafka_deploy_status
+
+    - name: Deploy Kakfa
+      copy:
+        src: "{{ kafka_download_dir }}"
+        dest: "{{ kafka_deploy_dir }}"
+        mode: u=rwx
+      when: not kafka_deploy_status.stat.exists
+      notify:
+        - Deploy kafka config
+        - Start kafka
+
+    - name: List kafka process
+      shell:
+        cmd: ps aux | grep -i kafka
+      register: kafka_process
+
+    - name: Start kafka if not running
+      command: ls
+      when: kafka_process.stdout is not search("server.properties")
+      notify:
+        - Start kafka
+
+    - name: Detect Config change in kafka
+      template:
+        src: template/kafka.j2
+        dest: "{{ kafka_deploy_dir}}/{{ kafka_version }}/config/server.properties"
+      register: kafka_config_change
+
+    - name: Restart kafka server if config changes
+      shell:
+        chdir: "{{ kafka_deploy_dir }}/{{ kafka_version }}"
+        cmd: bin/kafka-server-stop.sh
+      when: kafka_config_change.changed
+      notify:
+        - Start kafka
+
+
+  handlers:
+    - name: Deploy kafka config
+      template:
+        src: template/kafka.j2
+        dest: "{{ kafka_deploy_dir }}/{{ kafka_version }}/config/server.properties"
+
+    - name: Start kafka
+      shell:
+        chdir: "{{ kafka_deploy_dir }}/{{ kafka_version }}"
+        cmd: bin/kafka-server-start.sh -daemon config/server.properties
+

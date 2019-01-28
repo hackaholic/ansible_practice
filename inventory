@@ -4,14 +4,12 @@ network=cluster
 subnet=173.17.0.1/16
 host_names={'zk-01':'173.17.0.2', 'kf-01':'173.17.0.3', 'kf-02':'173.17.0.4', 'kf-03':'173.17.0.5', 'es-01':'173.17.0.21', 'es-02':'173.17.0.22', 'es-03':'173.17.0.23'}
 
-kafka_version=kafka_2.11-2.1.0
-
 [master]
 master ansible_host=master
 
 [zookeeper]
 zk-01 ansible_host=zk-01
-[zookeeper:vars]
+#[zookeeper:vars]
 #zookeeper_data_dir=/tmp/zookeeper
 #zookeeper_port=2181
 

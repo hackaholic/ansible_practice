@@ -2,9 +2,18 @@
 
 kf-01:
   id: 1
+  log_dirs: /tmp/kafka-logs
 
 kf-02:
   id: 2
+  log_dirs: /tmp/kafka-logs
 
 kf-03:
   id: 3
+  log_dirs: /tmp/kafka-logs
+
+kafka_version: kafka_2.11-2.1.0
+kafka_download_dir: /home/juniour/Downloads/{{ kafka_version }}
+kafka_deploy_dir: /opt
+
+zookeeper_connect: zk-01:2181
