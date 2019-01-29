@@ -1,0 +1,32 @@
+---
+
+es-01:
+  name: node-01
+  master: true
+  data: false
+  data_dir: /var/lib/elasticsearch
+  logs: /var/log/elasticsearch
+  port: 9200
+  minimum_master_node: 1
+
+es-02:
+  name: node-02
+  master: false
+  data: false
+  data_dir: /var/lib/elasticsearch
+  logs: /var/log/elasticsearch
+  port: 9200
+  minimum_master_node: 1
+
+es-03:
+  name: node-03
+  master: false
+  data: false
+  data_dir: /var/lib/elasticsearch
+  logs: /var/log/elasticsearch
+  port: 9200
+  minimum_master_node: 1
+
+elasticsearch_cluster_name: myapp
+elasticsearch_package: elasticsearch-6.5.2.deb
+elasticsearch_download_dir: /home/juniour/Downloads

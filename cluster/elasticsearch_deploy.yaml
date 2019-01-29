@@ -1,0 +1,54 @@
+---
+
+- hosts: elasticsearch
+  remote_user: root
+  become: yes
+  vars_files:
+    - config/elasticsearch_config.yaml
+
+  tasks:
+    - debug:
+        var: vars['groups']['elasticsearch'] | join (',')
+    - name: Check if elasticsearch is already deployed
+      shell:
+        cmd: dpkg -l
+      register: elasticsearch_deploy_status
+
+    - name: Deploy elasticsearch
+      copy:
+        src: "{{ elasticsearch_download_dir }}/{{ elasticsearch_package }}"
+        dest: /tmp
+        mode: u=rwx
+      when: elasticsearch_deploy_status.stdout is not search("elasticsearch")
+      notify:
+        - Deploy elasticsearch
+        - Start elasticsearch
+
+    - name: Start elasticsearch if not running
+      command: ls
+      notify:
+        - Start elasticsearch
+
+    - name: Detect config change in elasticsearch
+      template:
+        src: "{{ item }}"
+        dest: "/etc/elasticsearch/{{ item | basename | regex_replace('.j2', '') }}"
+      with_fileglob:
+        - template/elasticsearch/*.j2
+      register: elasticsearch_config_change
+
+    - name: Restart elasticsearch
+      service:
+        name: elasticsearch
+        state: restarted
+      when: elasticsearch_config_change.changed
+
+  handlers:
+    - name: Deploy elasticsearch
+      shell:
+        cmd: dpkg -i "/tmp/{{ elasticsearch_package }}"
+
+    - name: Start elasticsearch
+      service:
+        name: elasticsearch
+        state: started
