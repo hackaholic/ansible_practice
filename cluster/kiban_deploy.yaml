@@ -1,0 +1,52 @@
+---
+
+- hosts: kibana
+  remote_user: root
+  become: yes
+  vars_files:
+    - config/kibana_config.yaml
+
+  tasks:
+    - name: Check if kibana is already deployed
+      shell:
+        cmd: dpkg -l
+      register: kibana_deploy_status
+
+    - name: Deploy kibana
+      copy:
+        src: "{{ kibana_download_dir }}/{{ kibana_package }}"
+        dest: /tmp
+        mode: u=rwx
+      when: kibana_deploy_status.stdout is not search("kibana")
+      notify:
+        - Deploy kibana
+        - Start kibana
+
+    - name: Start kibana if not running
+      command: /bin/true
+      notify:
+        - Start kibana
+
+    - name: Detect config change in kibana
+      template:
+        src: "{{ item }}"
+        dest: "/etc/kibana/{{ item | basename | regex_replace('.j2', '') }}"
+      with_fileglob:
+        - template/kibana/*.j2
+      register: kibana_config_change
+
+    - name: Restart kibana
+      service:
+        name: kibana
+        state: restarted
+      when: kibana_config_change.changed
+
+  handlers:
+    - name: Deploy kibana
+      shell:
+        cmd: dpkg -i "/tmp/{{ kibana_package }}"
+
+    - name: Start kibana
+      service:
+        name: kibana
+        state: started

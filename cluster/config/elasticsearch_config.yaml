@@ -12,7 +12,7 @@ es-01:
 es-02:
   name: node-02
   master: false
-  data: false
+  data: true
   data_dir: /var/lib/elasticsearch
   logs: /var/log/elasticsearch
   port: 9200
@@ -20,8 +20,8 @@ es-02:
 
 es-03:
   name: node-03
-  master: false
-  data: false
+  master: true
+  data: true
   data_dir: /var/lib/elasticsearch
   logs: /var/log/elasticsearch
   port: 9200

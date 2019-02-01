@@ -1,0 +1,6 @@
+---
+
+server_port: 5601
+kibana_package: kibana-6.5.2-amd64.deb
+kibana_download_dir: /home/juniour/Downloads
+elasticsearch_url: es-01

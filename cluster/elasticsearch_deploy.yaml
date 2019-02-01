@@ -7,8 +7,6 @@
     - config/elasticsearch_config.yaml
 
   tasks:
-    - debug:
-        var: vars['groups']['elasticsearch'] | join (',')
     - name: Check if elasticsearch is already deployed
       shell:
         cmd: dpkg -l
@@ -25,7 +23,7 @@
         - Start elasticsearch
 
     - name: Start elasticsearch if not running
-      command: ls
+      command: /bin/true
       notify:
         - Start elasticsearch
 
